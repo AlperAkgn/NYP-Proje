@@ -5,6 +5,8 @@ import 'package:flutter_application_1/pages/draw_screen.dart';
 import 'dart:math';
 import 'dart:async';
 
+import 'package:lottie/lottie.dart';
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -128,7 +130,7 @@ class GameToolsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text("Zar At"),
+            Text("Zar At", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -136,10 +138,34 @@ class GameToolsScreen extends StatelessWidget {
                   child: Text("6'lık Zar"),
                   onPressed: () {
                     final result = rollDice(6);
+                    final zarResmi = "assets/images/dice-$result.png";
+
                     showDialog(
                       context: context,
-                      builder:
-                          (_) => AlertDialog(content: Text("Sonuç: $result")),
+                      builder: (context) => Dialog(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Lottie animasyonu
+                            Lottie.asset('assets/images/diceRoll.json',
+                                width: 150, height: 150, repeat: false,
+                                onLoaded: (composition) {
+                                  // Animasyon tamamlanınca sonucu göstermek için gecikme
+                                  Future.delayed(composition.duration, () {
+                                    Navigator.of(context).pop();
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) => Dialog(
+                                        child: SizedBox(child: Image.asset(zarResmi),width: 200,),
+                                      ),
+                                    );
+                                  });
+                                }),
+                            SizedBox(height: 10),
+                            Text("Zar atılıyor..."),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 ),
@@ -149,15 +175,14 @@ class GameToolsScreen extends StatelessWidget {
                     final result = rollDice(20);
                     showDialog(
                       context: context,
-                      builder:
-                          (_) => AlertDialog(content: Text("Sonuç: $result")),
+                      builder: (_) => AlertDialog(content: Text("Sonuç: $result")),
                     );
                   },
                 ),
               ],
             ),
             Divider(),
-            Text("Yazı Tura"),
+            Text("Yazı Tura", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ElevatedButton(
               child: Text("At"),
               onPressed: () {
@@ -169,7 +194,7 @@ class GameToolsScreen extends StatelessWidget {
               },
             ),
             Divider(),
-            Text("Rastgele Sayı Seç"),
+            Text("Rastgele Sayı Seç", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             TextField(
               controller: minController,
               decoration: InputDecoration(labelText: "Min"),

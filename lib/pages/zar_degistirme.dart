@@ -18,6 +18,7 @@ class _ZarDegistirici extends State<ZarDegistirici> {
       final random = Random().nextInt(6) + 1; // 1-6 arası sayı
       aktifZar = "assets/images/dice-$random.png";
     });
+    
   }
 
   @override
