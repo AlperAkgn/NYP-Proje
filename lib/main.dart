@@ -5,7 +5,6 @@ import 'package:flutter_application_1/pages/draw_screen.dart';
 import 'dart:math';
 import 'dart:async';
 
-
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
