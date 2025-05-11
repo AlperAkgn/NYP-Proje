@@ -94,7 +94,24 @@ class _DrawScreenState extends State<DrawScreen> {
                 SizedBox(height: 10, width: 10),
                 ElevatedButton(
                   onPressed: () {
-                    showDialog(
+                                  
+                                  
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) =>
+                                              Cark(isimler: participants),
+                                    ),
+                                  ).then((_) {
+                                    kazananlar = [];
+                                  });
+                    
+                  },
+                  child: Text("Çarkıfelek"),
+                ),
+              ElevatedButton(onPressed: (){
+                showDialog(
                       context: context,
                       builder:
                           (context) => AlertDialog(
@@ -117,15 +134,14 @@ class _DrawScreenState extends State<DrawScreen> {
                                     kazananlar.add(participants[sayi]);
                                   }
                                   Navigator.pop(context);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) =>
-                                              Cark(isimler: participants),
-                                    ),
-                                  ).then((_) {
-                                    kazananlar = [];
+                                  showDialog(context: context, builder: (context) => Dialog(child: SizedBox(
+                                    height: MediaQuery.of(context).size.height*0.6,
+                                    width: MediaQuery.of(context).size.height*0.8,
+                                    child:  
+                                    Expanded(child: ListView.builder(itemCount: 
+                                    kazananlar.length, itemBuilder: (context,i) => ListTile(title: Text(kazananlar[i]),)))
+                                  ,),)).then((_){
+                                    kazananlar.clear();
                                   });
                                 },
                                 child: Text("Çekiliş Yap"),
@@ -133,10 +149,7 @@ class _DrawScreenState extends State<DrawScreen> {
                             ],
                           ),
                     );
-                  },
-                  child: Text("Çekiliş yap"),
-                ),
-              ],
+              }, child: Text("Çekiliş"))],
             ),
             Expanded(
               //width: MediaQuery.of(context).size.width,

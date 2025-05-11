@@ -1,5 +1,6 @@
 // Tüm gerekli importlar
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/pages/cark.dart';
 import 'package:flutter_application_1/pages/draw_screen.dart';
 
 import 'dart:math';
@@ -83,6 +84,9 @@ class HomeScreen extends StatelessWidget {
                 );
               },
             ),
+           
+ 
+
             ElevatedButton(
               child: Text("Oyunlar"),
               onPressed: () {

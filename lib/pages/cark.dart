@@ -12,10 +12,12 @@ class Cark extends StatefulWidget {
 class _CarkState extends State<Cark> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
-  int _kazananIndex = 0;
   double _currentRotation = 0;
   double _finalRotation = 0;
   final Random _random = Random();
+
+  List<String> _kazananlar = [];
+  String? _sonKazanan;
 
   @override
   void initState() {
@@ -25,40 +27,51 @@ class _CarkState extends State<Cark> with SingleTickerProviderStateMixin {
       vsync: this,
     );
 
-    _animation =
-        Tween<double>(
-            begin: 0,
-            end: 1,
-          ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut))
-          ..addListener(() {
-            setState(() {
-              _currentRotation = _animation.value * _finalRotation;
-            });
-          })
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              double sliceAngle = 2 * pi / widget.isimler.length;
+    _animation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    )
+      ..addListener(() {
+        setState(() {
+          _currentRotation = _animation.value * _finalRotation;
+        });
+      })
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          _belirleKazanan();
+        }
+      });
+  }
 
-              // Normalize rotation to 0–2π
-              double normalizedRotation = _currentRotation % (2 * pi);
+  void _belirleKazanan() {
+    final kalanlar = widget.isimler
+        .where((isim) => !_kazananlar.contains(isim))
+        .toList();
 
-              // Calculate pointer position (arrow is at top → 270° → 3π/2)
-              double pointerAngle =
-                  (3 * pi / 2 - normalizedRotation) % (2 * pi);
-              if (pointerAngle < 0) pointerAngle += 2 * pi;
+    if (kalanlar.isEmpty) return;
 
-              int index = pointerAngle ~/ sliceAngle;
+    double sliceAngle = 2 * pi / kalanlar.length;
+    double normalizedRotation = _currentRotation % (2 * pi);
+    double pointerAngle = (3 * pi / 2 - normalizedRotation) % (2 * pi);
+    if (pointerAngle < 0) pointerAngle += 2 * pi;
 
-              setState(() {
-                _kazananIndex = index;
-              });
-            }
-          });
+    int index = pointerAngle ~/ sliceAngle;
+    String secilen = kalanlar[index];
+
+    setState(() {
+      _kazananlar.add(secilen);
+      _sonKazanan = secilen;
+    });
   }
 
   void _cevirCarki() {
-    int randomTur = 5 + _random.nextInt(5); // 5–9 tur
-    double randomEkAci = _random.nextDouble() * 2 * pi; // 0–2π arası
+    final kalanlar = widget.isimler
+        .where((isim) => !_kazananlar.contains(isim))
+        .toList();
+
+    if (kalanlar.isEmpty || _controller.isAnimating) return;
+
+    int randomTur = 5 + _random.nextInt(5);
+    double randomEkAci = _random.nextDouble() * 2 * pi;
 
     _finalRotation = 2 * pi * randomTur + randomEkAci;
 
@@ -74,8 +87,15 @@ class _CarkState extends State<Cark> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final herkesKazandiMi = _kazananlar.length == widget.isimler.length;
+    final kalanlar = widget.isimler
+        .where((isim) => !_kazananlar.contains(isim))
+        .toList();
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Çarklı Çekiliş')),
+      appBar: AppBar(title: const Text('Çarklı Çekiliş'),leading: IconButton(onPressed: (){
+        Navigator.pop(context);
+      }, icon: Icon(Icons.arrow_back)),),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -88,30 +108,36 @@ class _CarkState extends State<Cark> with SingleTickerProviderStateMixin {
                   child: SizedBox(
                     width: 300,
                     height: 300,
-                    child: CustomPaint(painter: CarkPainter(widget.isimler)),
+                    child: CustomPaint(painter: CarkPainter(kalanlar)),
                   ),
                 ),
                 const Positioned(
                   top: 0,
-                  child: Icon(
-                    Icons.arrow_drop_down,
-                    size: 50,
-                    color: Colors.red,
-                  ),
+                  child: Icon(Icons.arrow_drop_down,
+                      size: 50, color: Colors.red),
                 ),
               ],
             ),
             const SizedBox(height: 30),
-            ElevatedButton(onPressed: _cevirCarki, child: const Text('Çevir')),
+            ElevatedButton(
+              onPressed: herkesKazandiMi ? null : _cevirCarki,
+              child: Text(herkesKazandiMi ? 'Tüm isimler seçildi' : 'Çevir'),
+            ),
             const SizedBox(height: 20),
-            if (_controller.isCompleted)
+            if (_sonKazanan != null)
               Text(
-                'Kazanan: ${widget.isimler[_kazananIndex]}',
+                'Kazanan: $_sonKazanan',
                 style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                    fontSize: 24, fontWeight: FontWeight.bold),
               ),
+            const SizedBox(height: 20),
+            const Text(
+              'Kazananlar:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            for (int i = 0; i < _kazananlar.length; i++)
+              Text('${i + 1}. ${_kazananlar[i]}',
+                  style: const TextStyle(fontSize: 16)),
           ],
         ),
       ),
@@ -143,7 +169,6 @@ class CarkPainter extends CustomPainter {
         paint,
       );
 
-      // İsimleri yerleştir
       final angle = (i + 0.5) * sliceAngle;
       final offset = Offset(
         radius + radius * 0.6 * cos(angle),
@@ -160,9 +185,7 @@ class CarkPainter extends CustomPainter {
       canvas.translate(offset.dx, offset.dy);
       canvas.rotate(angle + pi / 2);
       textPainter.paint(
-        canvas,
-        Offset(-textPainter.width / 2, -textPainter.height / 2),
-      );
+          canvas, Offset(-textPainter.width / 2, -textPainter.height / 2));
       canvas.restore();
     }
   }
